@@ -20,6 +20,10 @@ from selenium.common.exceptions import TimeoutException
 #  как запустить что бы не получить ошибок)
 #  установить библиотеки из файла Pipfile (selenium, pytest, webdriver-manager)
 #  в терминале ввести и запустить команду из задачи pytest --language=es test_items.py
+#  специально/ и из-за лени) в строке 71 не прописывал текст кнопки "Добавить в корзину" на всех доступных языках
+#  предлагаю что бы посмотреть логирование ошибки запустить команду с языком который я не добавил)
+#  например с Румыским, pytest --language=ro test_items.py
+#  Удачи Вам и новых знаний)
 
 @pytest.mark.parametrize(
     "url",
@@ -71,7 +75,7 @@ def test_button_add_to_basket(
             exit()
     except:
         set_result_assert.add(False)
-        logging.error('"Текст кнопки не соответствует ожидаемому, или введен язык не из перечня"')
+        logging.error('Текст кнопки не соответствует ожидаемому, или введен язык не из перечня')
         assert False, "Текст кнопки не соответствует ожидаемому, или введен язык не из перечня"
 
     assert True in set_result_assert, "Ошибка выполнения теста, смотрим логи"
