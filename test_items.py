@@ -1,9 +1,12 @@
 import pytest
 import time
+import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait as WDW
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
 
 #  скромная просьба проверяющему, перед запуском теста пожалуйста установите библиотеку webdriver-manager (pip install webdriver-manager)
 #  благодаря этой библиотеке больше нет необходимости в скачивании вебдрайверов для различный браузеров (неодходимо только что бы на ПК был установлен сам браузер)
@@ -34,16 +37,43 @@ def test_button_add_to_basket(
 
     :param: browser - webdriver 
     """
-
+    logging.warning('start test - Проверка доступности кнопки "Добавить в корзину"')
     #  браузер получает url из декоратора
+    logging.info(f'переходим по ссылке "{url}"')
     browser.get(url)
 
+    #  собираем результаты всех проверок для финального assert
+    set_result_assert = set([True])
+
     #  явно ожидаем появление кнопки presence_of_element_located - проверяет что элемент будет видемой на странице
-    button = WDW(browser, 5).until(EC.presence_of_element_located((By.XPATH, '//form[@id="add_to_basket_form"]//button[@type="submit"]')))
+    logging.info(f'ищем кнопку на странице')
+    #  добавил такую конструкцию так как задание требует что бы на нахождение кнопки должен быть assert) на практике пишу по другому)
+    try:
+        button = WDW(browser, 5).until(EC.presence_of_element_located((By.XPATH, '//form[@id="add_to_basket_form"]//button[@type="submit"]')))
+    except TimeoutException:
+        set_result_assert.add(False)
+        logging.error(f'Кнопка не найдена на странице')
+        assert False, "Кнопка не найдена на странице"
 
     #  получаем текст кнопки (имя кнопки)
-    text = button.text
+    try:
+        logging.info(f'получаем тект(имя) кнопки')
+        text = button.text
+        logging.info(f'кнопка содержит тект "{text}"')
+    except:
+        set_result_assert.add(False)
+        logging.error(f'ошибка при поиске текста в кнопке')
+        assert False, 'ошибка при поиске текста в кнопке'
 
-    #  проверяем что текст кнопки принадлежит перечню языков (русский, испанский, английский, французкий))
-    assert text in ("Добавить в корзину", "Añadir al carrito", "Add to basket", "Ajouter au panier")
+    #  проверяем что текст кнопки принадлежит перечню языков (Русский, Испанский, Английский, Французкий, Корейский, Польский, Чешский, Арабский, Украинский) для того что бы не ждать 30 секунд)
+    try:
+        if text not in ("Добавить в корзину", "Añadir al carrito", "Add to basket", "Ajouter au panier", "장바구니 담기", "Dodaj do koszyka", "Vložit do košíku", "أضف الى سلة التسوق", "Додати в кошик"):
+            exit()
+    except:
+        set_result_assert.add(False)
+        logging.error('"Текст кнопки не соответствует ожидаемому, или введен язык не из перечня"')
+        assert False, "Текст кнопки не соответствует ожидаемому, или введен язык не из перечня"
+
+    assert True in set_result_assert, "Ошибка выполнения теста, смотрим логи"
+    
 
